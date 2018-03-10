@@ -220,6 +220,7 @@ class Submit(object):
         for id in self.__ticket.passengersId:
             passengersDetails.append(passengersDetailsList.get(id))
 
+        time.sleep(1)
         status, msg, submitStatus, errMsg = self._checkOrderInfo(passengersDetails, self.__ticket.seatType,
                                                                  self.__ticket.ticketTypeCodes)
         if not Utils.check(status, 'checkOrderInfo: %s' % msg) or not Utils.check(submitStatus,
@@ -257,7 +258,9 @@ class Submit(object):
         return jsonRet['status'], jsonRet['messages'], jsonRet['data']
 
     def showSubmitInfoPretty(self):
-        jsonTicketInfo = self._queryMyOrderNoComplete()
+        status, msg, jsonTicketInfo = self._queryMyOrderNoComplete()
+        if not Utils.check(status, msg):
+            return False
         from prettytable import PrettyTable
         table = PrettyTable()
         table.field_names = '序号 车次信息 席位信息 旅客信息 票款金额 车票状态'.split(sep=' ')
@@ -276,6 +279,7 @@ class Submit(object):
         print(table)
         Log.v('总张数:%d\t待支付金额:%s' % (
             totalTicketNum, Fore.YELLOW + '{}元'.format(TrainUtils.submitTicketTotalCost(jsonTicketInfo)) + Fore.RESET))
+        return True
 
     def showSubmitInfo(self):
         return self._queryMyOrderNoComplete()
@@ -298,13 +302,13 @@ class Submit(object):
                     return None
             interval = waitTime // 60
             Log.w('未出票，订单排队中...预估等待时间: %s 分钟' % (interval if interval <= 30 else '超过30'))
-            # 动态调整查询时间
             if interval > 30:
-                time.sleep(2 * 60)
-            elif interval > 20:
                 time.sleep(60)
-            elif interval > 10:
+            elif interval > 20:
                 time.sleep(30)
+            elif interval > 10:
+                time.sleep(10)
             else:
                 time.sleep(3)
+
         return None

@@ -1,3 +1,5 @@
+import time
+
 from Configure import *
 from define.Const import SEAT_TYPE
 from train.login.Login import Login
@@ -24,7 +26,9 @@ def main():
         try:
             print('-' * 40)
             ticketDetails = Query.loopQuery(TRAIN_DATE, FROM_STATION, TO_STATION,
-                                            TrainUtils.passengerType2Desc(passengerTypeCode), seatTypesCode)
+                                            TrainUtils.passengerType2Desc(passengerTypeCode),
+                                            TRAINS_NO,
+                                            seatTypesCode)
             Log.v('已为您查询到可用余票:%s' % ticketDetails)
 
             ticketDetails.passengersId = PASSENGERS_ID
@@ -34,9 +38,9 @@ def main():
             if submit.submit():
                 submit.showSubmitInfoPretty()
                 break
+            time.sleep(1)
         except Exception as e:
-            Log.w('exception occured,now retrying...')
-            # traceback.print_exc()
+            Log.w(e)
     print(login.loginOut())
 
 
